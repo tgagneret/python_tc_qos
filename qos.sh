@@ -1,3 +1,6 @@
+#!/bin/zsh
+# Author: jvehent, modified by Anthony Ruhier
+
 PUBLIC_IF=eth0 # network card to apply the QoS to
 LAN_IF=eth1 # network card to apply the QoS to
 UPLINK=5000 # upload in kbits/s
