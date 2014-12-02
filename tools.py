@@ -13,7 +13,10 @@ def launch_command(command, stderr=None):
     if DEBUG:
         print(" ".join(command))
     else:
-        subprocess.call(command, stderr=stderr)
+        r = subprocess.call(command, stderr=stderr)
+        if r != 0:
+            print("Error: ")
+            print(" ".join(command))
 
 
 def tc_qdisc(action, interface, algorithm, handle=None, parent=None, *args,
