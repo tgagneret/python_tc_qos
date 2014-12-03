@@ -27,7 +27,7 @@ def interactive_class():
                     cburst=minimum_ping * ceil, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid, handle="1100:",
                     algorithm="pfifo")
-    tools.filter_add(PUBLIC_IF, parent="1:11", prio=prio, handle=mark,
+    tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -50,7 +50,7 @@ def tcp_ack_class():
                     burst=expected_ping * rate, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid, handle="1200:",
                     algorithm="sfq", perturb=10)
-    tools.filter_add(PUBLIC_IF, parent="1:11", prio=prio, handle=mark,
+    tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -76,7 +76,7 @@ def ssh_class():
                     cburst=minimum_ping * ceil, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid, handle="1300:",
                     algorithm="sfq", perturb=10)
-    tools.filter_add(PUBLIC_IF, parent="1:11", prio=prio, handle=mark,
+    tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -96,7 +96,7 @@ def http_class():
                     burst=expected_ping * rate, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid, handle="1400:",
                     algorithm="sfq", perturb=10)
-    tools.filter_add(PUBLIC_IF, parent="1:11", prio=prio, handle=mark,
+    tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -116,7 +116,7 @@ def default_class():
                     burst=expected_ping * rate, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid, handle="1900:",
                     algorithm="sfq", perturb=10)
-    tools.filter_add(PUBLIC_IF, parent="1:11", prio=prio, handle=mark,
+    tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -125,7 +125,7 @@ def apply_qos():
     Apply the QoS for the OUTPUT
     """
     # Creating the client branch (htb)
-    tools.class_add(PUBLIC_IF, parent="1:1", classid="1:11", rate=UPLOAD,
+    tools.class_add(PUBLIC_IF, parent="1:1", classid="1:11", rate=UPLOAD/2,
                     ceil=UPLOAD, prio=0)
 
     interactive_class()
