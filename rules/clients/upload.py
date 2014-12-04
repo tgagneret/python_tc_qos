@@ -42,7 +42,7 @@ def tcp_ack_class():
     classid = "1:1200"
     prio = 20
     mark = 1200
-    rate = UPLOAD * 50/100
+    rate = UPLOAD/2
     ceil = UPLOAD
     expected_ping = 30/1000
 
@@ -108,7 +108,7 @@ def default_class():
     classid = "1:1900"
     prio = 100
     mark = 1900
-    rate = UPLOAD * 60/100
+    rate = UPLOAD/2
     ceil = UPLOAD
     expected_ping = 40/1000
 
@@ -125,8 +125,10 @@ def apply_qos():
     Apply the QoS for the OUTPUT
     """
     # Creating the client branch (htb)
-    tools.class_add(PUBLIC_IF, parent="1:1", classid="1:11", rate=UPLOAD/2,
-                    ceil=UPLOAD, prio=0)
+    tools.class_add(PUBLIC_IF, parent="1:1", classid="1:11",
+                    rate=UPLOAD/2, ceil=UPLOAD,
+                    burst=30 * UPLOAD/2, cburst=10*UPLOAD,
+                    prio=0)
 
     interactive_class()
     tcp_ack_class()
