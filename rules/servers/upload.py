@@ -42,7 +42,7 @@ def tcp_ack_class():
     classid = "1:2200"
     prio = 20
     mark = 2200
-    rate = UPLOAD * 50/100
+    rate = UPLOAD/2
     ceil = UPLOAD
     expected_ping = 30/1000
 
@@ -80,26 +80,6 @@ def ssh_class():
                      flowid=classid)
 
 
-def http_class():
-    """
-    Class for HTTP/HTTPS connections.
-    """
-    parent = "1:12"
-    classid = "1:2400"
-    prio = 40
-    mark = 2400
-    rate = UPLOAD * 20/100
-    ceil = UPLOAD
-    expected_ping = 40/1000
-
-    tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=expected_ping * rate, prio=prio)
-    tools.qdisc_add(PUBLIC_IF, parent=classid, handle="2400:",
-                    algorithm="sfq", perturb=10)
-    tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
-                     flowid=classid)
-
-
 def default_class():
     """
     Default class
@@ -108,7 +88,7 @@ def default_class():
     classid = "1:2900"
     prio = 100
     mark = 2900
-    rate = UPLOAD * 60/100
+    rate = UPLOAD/2
     ceil = UPLOAD
     expected_ping = 40/1000
 
@@ -132,5 +112,4 @@ def apply_qos():
     interactive_class()
     tcp_ack_class()
     ssh_class()
-    http_class()
     default_class()
