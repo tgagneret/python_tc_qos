@@ -14,9 +14,9 @@ def interactive_class():
     Low priority, pass before everything else. Uses htb then pfifo.
     """
     parent = "1:11"
-    classid = "1:1100"
+    classid = "1:110"
     prio = 10
-    mark = 1100
+    mark = 110
     rate = UPLOAD * 10/100
     ceil = UPLOAD * 75/100
     minimum_ping = 10/1000
@@ -25,7 +25,8 @@ def interactive_class():
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
                     burst=expected_ping * rate,
                     cburst=minimum_ping * ceil, prio=prio)
-    tools.qdisc_add(PUBLIC_IF, parent=classid, handle="1100:",
+    tools.qdisc_add(PUBLIC_IF, parent=classid,
+                    handle=tools.get_child_qdiscid(classid),
                     algorithm="pfifo")
     tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
@@ -39,16 +40,17 @@ def tcp_ack_class():
     as possible when a host of the network is downloading. Uses htb then sfq.
     """
     parent = "1:11"
-    classid = "1:1200"
+    classid = "1:120"
     prio = 20
-    mark = 1200
+    mark = 120
     rate = UPLOAD/2
     ceil = UPLOAD
     expected_ping = 30/1000
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
                     burst=expected_ping * rate, prio=prio)
-    tools.qdisc_add(PUBLIC_IF, parent=classid, handle="1200:",
+    tools.qdisc_add(PUBLIC_IF, parent=classid,
+                    handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
     tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
@@ -63,9 +65,9 @@ def ssh_class():
     and ensure that none has the priority
     """
     parent = "1:11"
-    classid = "1:1300"
+    classid = "1:1100"
     prio = 30
-    mark = 1300
+    mark = 1100
     rate = UPLOAD * 10/100
     ceil = UPLOAD
     expected_ping = 25/1000
@@ -74,7 +76,8 @@ def ssh_class():
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
                     burst=expected_ping * rate,
                     cburst=minimum_ping * ceil, prio=prio)
-    tools.qdisc_add(PUBLIC_IF, parent=classid, handle="1300:",
+    tools.qdisc_add(PUBLIC_IF, parent=classid,
+                    handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
     tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
@@ -85,16 +88,17 @@ def http_class():
     Class for HTTP/HTTPS connections.
     """
     parent = "1:11"
-    classid = "1:1400"
+    classid = "1:1200"
     prio = 40
-    mark = 1400
+    mark = 1200
     rate = UPLOAD * 20/100
     ceil = UPLOAD
     expected_ping = 40/1000
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
                     burst=expected_ping * rate, prio=prio)
-    tools.qdisc_add(PUBLIC_IF, parent=classid, handle="1400:",
+    tools.qdisc_add(PUBLIC_IF, parent=classid,
+                    handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
     tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
@@ -105,16 +109,17 @@ def default_class():
     Default class
     """
     parent = "1:11"
-    classid = "1:1900"
+    classid = "1:1500"
     prio = 100
-    mark = 1900
+    mark = 1500
     rate = UPLOAD/2
     ceil = UPLOAD
     expected_ping = 40/1000
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
                     burst=expected_ping * rate, prio=prio)
-    tools.qdisc_add(PUBLIC_IF, parent=classid, handle="1900:",
+    tools.qdisc_add(PUBLIC_IF, parent=classid,
+                    handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
     tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
@@ -127,7 +132,7 @@ def apply_qos():
     # Creating the client branch (htb)
     tools.class_add(PUBLIC_IF, parent="1:1", classid="1:11",
                     rate=UPLOAD/2, ceil=UPLOAD,
-                    burst=30 * UPLOAD/2, cburst=10*UPLOAD,
+                    burst=30 * UPLOAD/2, cburst=10 * UPLOAD,
                     prio=0)
 
     interactive_class()

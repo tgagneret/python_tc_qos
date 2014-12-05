@@ -14,9 +14,9 @@ def interactive_class():
     Low priority, pass before everything else. Uses htb then pfifo.
     """
     parent = "1:12"
-    classid = "1:2100"
+    classid = "1:210"
     prio = 10
-    mark = 2100
+    mark = 210
     rate = UPLOAD * 10/100
     ceil = UPLOAD * 75/100
     minimum_ping = 10/1000
@@ -25,8 +25,34 @@ def interactive_class():
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
                     burst=expected_ping * rate,
                     cburst=minimum_ping * ceil, prio=prio)
-    tools.qdisc_add(PUBLIC_IF, parent=classid, handle="2100:",
+    tools.qdisc_add(PUBLIC_IF, parent=classid,
+                    handle=tools.get_child_qdiscid(classid),
                     algorithm="pfifo")
+    tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
+                     flowid=classid)
+
+
+def openvpn_class():
+    """
+    Class for openvpn.
+
+    We want openvpn to be fast. Uses htb then sfq.
+    """
+    parent = "1:12"
+    classid = "1:215"
+    prio = 15
+    mark = 215
+    rate = UPLOAD/2
+    ceil = UPLOAD
+    minimum_ping = 10/1000
+    expected_ping = 20/1000
+
+    tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
+                    burst=expected_ping * rate,
+                    cburst=minimum_ping * ceil, prio=prio)
+    tools.qdisc_add(PUBLIC_IF, parent=classid,
+                    handle=tools.get_child_qdiscid(classid),
+                    algorithm="sfq", perturb=10)
     tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
@@ -39,42 +65,17 @@ def tcp_ack_class():
     as possible when a host of the network is downloading. Uses htb then sfq.
     """
     parent = "1:12"
-    classid = "1:2200"
+    classid = "1:220"
     prio = 20
-    mark = 2200
+    mark = 220
     rate = UPLOAD/2
     ceil = UPLOAD
     expected_ping = 30/1000
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
                     burst=expected_ping * rate, prio=prio)
-    tools.qdisc_add(PUBLIC_IF, parent=classid, handle="2200:",
-                    algorithm="sfq", perturb=10)
-    tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
-                     flowid=classid)
-
-
-def ssh_class():
-    """
-    Class for SSH connections.
-
-    We want the ssh connections to be smooth !
-    SFQ will mix the packets if there are several SSH connections in parallel
-    and ensure that none has the priority
-    """
-    parent = "1:12"
-    classid = "1:2300"
-    prio = 30
-    mark = 2300
-    rate = UPLOAD * 10/100
-    ceil = UPLOAD
-    expected_ping = 25/1000
-    minimum_ping = 10/1000
-
-    tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=expected_ping * rate,
-                    cburst=minimum_ping * ceil, prio=prio)
-    tools.qdisc_add(PUBLIC_IF, parent=classid, handle="2300:",
+    tools.qdisc_add(PUBLIC_IF, parent=classid,
+                    handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
     tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
@@ -83,18 +84,43 @@ def ssh_class():
 def default_class():
     """
     Default class
+
+    Uses htb then sfq
     """
     parent = "1:12"
-    classid = "1:2900"
+    classid = "1:2500"
     prio = 100
-    mark = 2900
+    mark = 2500
     rate = UPLOAD/2
     ceil = UPLOAD
     expected_ping = 40/1000
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
                     burst=expected_ping * rate, prio=prio)
-    tools.qdisc_add(PUBLIC_IF, parent=classid, handle="2900:",
+    tools.qdisc_add(PUBLIC_IF, parent=classid,
+                    handle=tools.get_child_qdiscid(classid),
+                    algorithm="sfq", perturb=10)
+    tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
+                     flowid=classid)
+
+
+def torrents_class():
+    """
+    Class for torrents
+
+    Very low priority. Uses htb then sfq
+    """
+    parent = "1:12"
+    classid = "1:2600"
+    prio = 150
+    mark = 2600
+    rate = UPLOAD/20
+    ceil = UPLOAD
+
+    tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
+                    prio=prio)
+    tools.qdisc_add(PUBLIC_IF, parent=classid,
+                    handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
     tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
@@ -110,6 +136,7 @@ def apply_qos():
                     ceil=UPLOAD, prio=1)
 
     interactive_class()
+    openvpn_class()
     tcp_ack_class()
-    ssh_class()
     default_class()
+    torrents_class()
