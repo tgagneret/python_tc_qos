@@ -81,6 +81,30 @@ def tcp_ack_class():
                      flowid=classid)
 
 
+def irc_class():
+    """
+    Class for IRC or services that doesn't need a lot of bandwidth but have to
+    be quick.
+
+    A bit low priority, htb then sfq.
+    """
+    parent = "1:12"
+    classid = "1:2100"
+    prio = 30
+    mark = 2100
+    rate = 10
+    ceil = UPLOAD/5
+    expected_ping = 30/1000
+
+    tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
+                    burst=expected_ping * rate, prio=prio)
+    tools.qdisc_add(PUBLIC_IF, parent=classid,
+                    handle=tools.get_child_qdiscid(classid),
+                    algorithm="sfq", perturb=10)
+    tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
+                     flowid=classid)
+
+
 def default_class():
     """
     Default class
@@ -138,5 +162,6 @@ def apply_qos():
     interactive_class()
     openvpn_class()
     tcp_ack_class()
+    irc_class()
     default_class()
     torrents_class()
