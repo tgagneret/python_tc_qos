@@ -15,12 +15,14 @@ def launch_command(command, stderr=None):
     else:
         r = subprocess.call(command, stderr=stderr)
         if r != 0:
-            print("Error: ")
-            print(" ".join(command))
+            if stderr == subprocess.DEVNULL:
+                return
+            print("Error: ", file=stderr)
+            print(" ".join(command), file=stderr)
 
 
-def tc_qdisc(action, interface, algorithm, handle=None, parent=None, *args,
-             **kwargs):
+def tc_qdisc(action, interface, algorithm, handle=None, parent=None,
+             stderr=None, *args, **kwargs):
     """
     Add/change/replace/replace qdisc
 
@@ -32,6 +34,7 @@ def tc_qdisc(action, interface, algorithm, handle=None, parent=None, *args,
     :param algorithm: algorithm used for this leaf (htb, pfifo, sfq, ...)
     :param handle: handle parameter for tc (default: None)
     :param parent: if is None, the rule will be added as root. (default: None)
+    :param stderr: indicates stderr to use during the tc commands execution
     """
     command = ["tc", "qdisc", action, "dev", interface]
     if parent is None:
@@ -44,11 +47,7 @@ def tc_qdisc(action, interface, algorithm, handle=None, parent=None, *args,
     for i, j in kwargs.items():
         command += [str(i), str(j)]
 
-    # Avoid error when cleaning rules if no one exists
-    if action == "delete":
-        launch_command(command, stderr=subprocess.DEVNULL)
-    else:
-        launch_command(command)
+    launch_command(command, stderr)
 
 
 def qdisc_add(interface, handle, algorithm, parent=None, *args,
