@@ -132,7 +132,7 @@ def apply_qos():
     # Creating the client branch (htb)
     tools.class_add(PUBLIC_IF, parent="1:1", classid="1:11",
                     rate=UPLOAD/2, ceil=UPLOAD,
-                    burst=30 * UPLOAD/2, cburst=10 * UPLOAD,
+                    burst=(30/1000) * UPLOAD/2, cburst=(10/1000) * UPLOAD,
                     prio=0)
 
     interactive_class()
