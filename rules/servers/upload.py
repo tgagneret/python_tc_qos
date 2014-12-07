@@ -5,6 +5,12 @@
 import tools
 from config import PUBLIC_IF, UPLOAD
 
+MIN_UPLOAD = UPLOAD/10
+MAX_UPLOAD = UPLOAD
+# Cisco magic burst and cburst formula
+burst_formula = lambda rate: 0.5 * rate/8
+cburst_formula = lambda rate, burst: 0.5 * rate/8 + burst
+
 
 def interactive_class():
     """
@@ -17,12 +23,13 @@ def interactive_class():
     classid = "1:210"
     prio = 10
     mark = 210
-    rate = UPLOAD * 10/100
-    ceil = UPLOAD * 75/100
-    burst = 0.3 * ceil/8  # ceil in bytes during 0.3 seconds
+    rate = MAX_UPLOAD * 10/100
+    ceil = MAX_UPLOAD * 75/100
+    burst = burst_formula(rate)
+    cburst = cburst_formula(rate, burst)
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=burst, prio=prio)
+                    burst=burst, cburst=cburst, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="pfifo")
@@ -40,12 +47,13 @@ def openvpn_class():
     classid = "1:215"
     prio = 15
     mark = 215
-    rate = UPLOAD/2
-    ceil = UPLOAD
-    burst = 0.5 * ceil/8  # ceil in bytes during 0.5 seconds
+    rate = MIN_UPLOAD
+    ceil = MAX_UPLOAD
+    burst = burst_formula(rate)
+    cburst = cburst_formula(rate, burst)
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=burst, prio=prio)
+                    burst=burst, cburst=cburst, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
@@ -64,12 +72,13 @@ def tcp_ack_class():
     classid = "1:220"
     prio = 20
     mark = 220
-    rate = UPLOAD/2
-    ceil = UPLOAD
-    burst = 0.1 * ceil/8  # ceil in bytes during 0.5 seconds
+    rate = MIN_UPLOAD
+    ceil = MAX_UPLOAD
+    burst = burst_formula(rate)
+    cburst = cburst_formula(rate, burst)
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=burst, prio=prio)
+                    burst=burst, cburst=cburst, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
@@ -88,11 +97,13 @@ def irc_class():
     classid = "1:2100"
     prio = 30
     mark = 2100
-    rate = 10
-    ceil = UPLOAD/5
+    rate = 100
+    ceil = MAX_UPLOAD/5
+    burst = burst_formula(rate)
+    cburst = cburst_formula(rate, burst)
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    prio=prio)
+                    burst=burst, cburst=cburst, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
@@ -110,11 +121,13 @@ def default_class():
     classid = "1:2500"
     prio = 100
     mark = 2500
-    rate = UPLOAD/2
-    ceil = UPLOAD
+    rate = MIN_UPLOAD
+    ceil = MAX_UPLOAD
+    burst = burst_formula(rate)
+    cburst = cburst_formula(rate, burst)
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    prio=prio)
+                    burst=burst, cburst=cburst, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
@@ -132,12 +145,13 @@ def torrents_class():
     classid = "1:2600"
     prio = 150
     mark = 2600
-    rate = UPLOAD/20
-    ceil = UPLOAD
-    burst = 0.05 * ceil/8
+    rate = MIN_UPLOAD
+    ceil = MAX_UPLOAD
+    burst = 0.5 * rate/8
+    cburst = cburst_formula(rate, burst)
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=burst, prio=prio)
+                    burst=burst, cburst=cburst, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
@@ -151,8 +165,11 @@ def apply_qos():
     """
     # Creating the server branch (htb)
     # We want the client to be prioritary
-    tools.class_add(PUBLIC_IF, parent="1:1", classid="1:12", rate=UPLOAD/2,
-                    ceil=UPLOAD, prio=1)
+    rate = MIN_UPLOAD
+    burst = burst_formula(rate)
+    cburst = cburst_formula(rate, burst)
+    tools.class_add(PUBLIC_IF, parent="1:1", classid="1:12", rate=rate,
+                    ceil=UPLOAD, burst=burst, cburst=cburst, prio=1)
 
     interactive_class()
     openvpn_class()
