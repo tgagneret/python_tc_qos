@@ -19,12 +19,10 @@ def interactive_class():
     mark = 110
     rate = UPLOAD * 10/100
     ceil = UPLOAD * 75/100
-    minimum_ping = 10/1000
-    expected_ping = 20/1000
+    burst = 0.3 * ceil/8  # ceil in bytes during 0.3 seconds
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=expected_ping * rate,
-                    cburst=minimum_ping * ceil, prio=prio)
+                    burst=burst, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="pfifo")
@@ -45,10 +43,10 @@ def tcp_ack_class():
     mark = 120
     rate = UPLOAD/2
     ceil = UPLOAD
-    expected_ping = 30/1000
+    burst = 0.3 * ceil/8    # ceil in bytes during 0.3 seconds
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=expected_ping * rate, prio=prio)
+                    burst=burst, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
@@ -70,12 +68,10 @@ def ssh_class():
     mark = 1100
     rate = UPLOAD * 10/100
     ceil = UPLOAD
-    expected_ping = 25/1000
-    minimum_ping = 10/1000
+    burst = ceil / 8  # ceil in bytes during 1 second
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=expected_ping * rate,
-                    cburst=minimum_ping * ceil, prio=prio)
+                    burst=burst, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
@@ -93,10 +89,10 @@ def http_class():
     mark = 1200
     rate = UPLOAD * 20/100
     ceil = UPLOAD
-    expected_ping = 40/1000
+    burst = ceil / 8  # ceil in bytes during 1 second
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=expected_ping * rate, prio=prio)
+                    burst=burst, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
@@ -114,10 +110,9 @@ def default_class():
     mark = 1500
     rate = UPLOAD/2
     ceil = UPLOAD
-    expected_ping = 40/1000
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=expected_ping * rate, prio=prio)
+                    prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
@@ -132,8 +127,7 @@ def apply_qos():
     # Creating the client branch (htb)
     tools.class_add(PUBLIC_IF, parent="1:1", classid="1:11",
                     rate=UPLOAD/2, ceil=UPLOAD,
-                    burst=(30/1000) * UPLOAD/2, cburst=(10/1000) * UPLOAD,
-                    prio=0)
+                    burst=0.5 * UPLOAD/2, prio=0)
 
     interactive_class()
     tcp_ack_class()

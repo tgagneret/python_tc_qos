@@ -19,12 +19,10 @@ def interactive_class():
     mark = 210
     rate = UPLOAD * 10/100
     ceil = UPLOAD * 75/100
-    minimum_ping = 10/1000
-    expected_ping = 20/1000
+    burst = 0.3 * ceil/8  # ceil in bytes during 0.3 seconds
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=expected_ping * rate,
-                    cburst=minimum_ping * ceil, prio=prio)
+                    burst=burst, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="pfifo")
@@ -44,12 +42,10 @@ def openvpn_class():
     mark = 215
     rate = UPLOAD/2
     ceil = UPLOAD
-    minimum_ping = 10/1000
-    expected_ping = 20/1000
+    burst = 0.5 * ceil/8  # ceil in bytes during 0.5 seconds
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=expected_ping * rate,
-                    cburst=minimum_ping * ceil, prio=prio)
+                    burst=burst, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
@@ -70,10 +66,10 @@ def tcp_ack_class():
     mark = 220
     rate = UPLOAD/2
     ceil = UPLOAD
-    expected_ping = 30/1000
+    burst = 0.1 * ceil/8  # ceil in bytes during 0.5 seconds
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=expected_ping * rate, prio=prio)
+                    burst=burst, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
@@ -94,10 +90,9 @@ def irc_class():
     mark = 2100
     rate = 10
     ceil = UPLOAD/5
-    expected_ping = 30/1000
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=expected_ping * rate, prio=prio)
+                    prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
@@ -117,10 +112,9 @@ def default_class():
     mark = 2500
     rate = UPLOAD/2
     ceil = UPLOAD
-    expected_ping = 40/1000
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=expected_ping * rate, prio=prio)
+                    prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
@@ -140,9 +134,10 @@ def torrents_class():
     mark = 2600
     rate = UPLOAD/20
     ceil = UPLOAD
+    burst = 0.05 * ceil/8
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
-                    prio=prio)
+                    burst=burst, prio=prio)
     tools.qdisc_add(PUBLIC_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
