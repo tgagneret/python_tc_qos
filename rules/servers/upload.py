@@ -24,7 +24,7 @@ def interactive_class():
     prio = 10
     mark = 210
     rate = MAX_UPLOAD * 10/100
-    ceil = MAX_UPLOAD * 75/100
+    ceil = MAX_UPLOAD * 90/100
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -47,7 +47,7 @@ def openvpn_class():
     classid = "1:215"
     prio = 15
     mark = 215
-    rate = MIN_UPLOAD
+    rate = MAX_UPLOAD/3
     ceil = MAX_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
@@ -166,10 +166,11 @@ def apply_qos():
     # Creating the server branch (htb)
     # We want the client to be prioritary
     rate = MIN_UPLOAD
+    ceil = MAX_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
     tools.class_add(PUBLIC_IF, parent="1:1", classid="1:12", rate=rate,
-                    ceil=UPLOAD, burst=burst, cburst=cburst, prio=1)
+                    ceil=ceil, burst=burst, cburst=cburst, prio=1)
 
     interactive_class()
     openvpn_class()

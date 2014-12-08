@@ -5,7 +5,6 @@
 import tools
 from config import PUBLIC_IF, UPLOAD
 
-MIN_UPLOAD = UPLOAD/2
 MAX_UPLOAD = UPLOAD
 # Cisco magic burst and cburst formula
 burst_formula = lambda rate: 0.5 * rate/8
@@ -24,7 +23,7 @@ def interactive_class():
     prio = 10
     mark = 110
     rate = MAX_UPLOAD * 10/100
-    ceil = MAX_UPLOAD * 75/100
+    ceil = MAX_UPLOAD * 90/100
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -137,12 +136,12 @@ def apply_qos():
     Apply the QoS for the OUTPUT
     """
     # Creating the client branch (htb)
-    rate = MIN_UPLOAD
+    rate = UPLOAD/2
     ceil = MAX_UPLOAD
     burst = burst_formula(rate) * 3
     cburst = cburst_formula(rate, burst)
     tools.class_add(PUBLIC_IF, parent="1:1", classid="1:11",
-                    rate=UPLOAD/2, ceil=UPLOAD,
+                    rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=0)
 
     interactive_class()
