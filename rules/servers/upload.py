@@ -49,7 +49,7 @@ def openvpn_class():
     mark = 215
     rate = MAX_UPLOAD/3
     ceil = MAX_UPLOAD
-    burst = burst_formula(rate)
+    burst = burst_formula(rate) * 2
     cburst = cburst_formula(rate, burst)
 
     tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
