@@ -4,6 +4,8 @@ import tools
 from config import INTERFACES, DOWNLOAD
 from rules import download
 
+burst_formula = lambda rate: 0.5 * rate/8
+
 
 def apply_qos():
     openvpn_if = INTERFACES["openvpn"]
