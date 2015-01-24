@@ -37,6 +37,7 @@ def show_qos():
     tools.qdisc_show(interfaces, "details")
     print("\n\t QDiscs stats\n\t==============\n")
     tools.qdisc_show(interfaces, "details")
+    print("\n\t QDiscs stats\n\t==============\n")
 
 
 def print_help():
