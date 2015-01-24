@@ -236,7 +236,10 @@ def tc_filter(interface, action, prio, handle, flowid, parent=None,
     :param handle: filter id
     :param flowid: target class
     :param parent: parent class/qdisc (default: None)
-    :param protocol: protocol to filter. Use ipv6 for IPv6 (default: ip)
+    :param protocol: protocol to filter. Use ipv6 for IPv6 (default: ip and
+                     ipv6). WARNING: Be careful when not setting the protocol,
+                     the priority has to be different between ipv6 and ip so
+                     the function will just apply "prio + 1" for ipv6.
     """
     command = ["tc", "filter", action, "dev", interface]
     if parent is not None:
