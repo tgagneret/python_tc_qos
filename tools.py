@@ -223,7 +223,7 @@ def class_show(interface, show_format=None):
 
 @multiple_interfaces
 def tc_filter(interface, action, prio, handle, flowid, parent=None,
-              protocol="ip", **kwargs):
+              protocol=None, **kwargs):
     """
     Add/change/replace/delete filter
 
@@ -241,6 +241,10 @@ def tc_filter(interface, action, prio, handle, flowid, parent=None,
     command = ["tc", "filter", action, "dev", interface]
     if parent is not None:
         command += ["parent", parent]
+    if protocol is None:
+        tc_filter(interface, action, prio + 1, handle, flowid, parent,
+                  protocol="ipv6", **kwargs)
+        protocol = "ip"
     command += ["protocol", protocol, "prio", str(prio), "handle", str(handle),
                 "fw", "flowid", flowid]
     for i, j in kwargs.items():
@@ -249,7 +253,7 @@ def tc_filter(interface, action, prio, handle, flowid, parent=None,
 
 
 @multiple_interfaces
-def filter_add(interface, parent, prio, handle, flowid, protocol="ip",
+def filter_add(interface, parent, prio, handle, flowid, protocol=None,
                **kwargs):
     """
     Add filter
@@ -264,12 +268,12 @@ def filter_add(interface, parent, prio, handle, flowid, protocol="ip",
     :param flowid: target class
     :param protocol: protocol to filter (default: ip)
     """
-    return tc_filter(interface, "add", prio, handle, flowid, parent, protocol,
-                     **kwargs)
+    tc_filter(interface, "add", prio, handle, flowid, parent, protocol,
+              **kwargs)
 
 
 @multiple_interfaces
-def filter_del(interface, prio, handle, flowid, parent=None, protocol="ip",
+def filter_del(interface, prio, handle, flowid, parent=None, protocol=None,
                **kwargs):
     """
     Delete filter
@@ -284,8 +288,8 @@ def filter_del(interface, prio, handle, flowid, parent=None, protocol="ip",
     :param parent: parent class/qdisc (default: None)
     :param protocol: protocol to filter (default: ip)
     """
-    return tc_filter(interface, "delete", prio, handle, flowid, parent,
-                     protocol, **kwargs)
+    tc_filter(interface, "add", prio, handle, flowid, parent, protocol,
+              **kwargs)
 
 
 @multiple_interfaces
