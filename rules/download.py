@@ -3,7 +3,9 @@
 # QoS for upload
 
 import tools
-from config import LAN_IF, DOWNLOAD, UPLOAD
+from config import INTERFACES, DOWNLOAD, UPLOAD
+
+OPENVPN_IF = INTERFACES["openvpn"]
 
 MAX_DOWNLOAD = DOWNLOAD
 # Cisco magic burst and cburst formula
@@ -27,12 +29,12 @@ def interactive_class():
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(LAN_IF, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(OPENVPN_IF, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(LAN_IF, parent=classid,
+    tools.qdisc_add(OPENVPN_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="pfifo")
-    tools.filter_add(LAN_IF, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(OPENVPN_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -52,12 +54,12 @@ def tcp_ack_class():
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(LAN_IF, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(OPENVPN_IF, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(LAN_IF, parent=classid,
+    tools.qdisc_add(OPENVPN_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
-    tools.filter_add(LAN_IF, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(OPENVPN_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -78,12 +80,12 @@ def ssh_class():
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(LAN_IF, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(OPENVPN_IF, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(LAN_IF, parent=classid,
+    tools.qdisc_add(OPENVPN_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
-    tools.filter_add(LAN_IF, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(OPENVPN_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -100,12 +102,12 @@ def http_class():
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(LAN_IF, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(OPENVPN_IF, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(LAN_IF, parent=classid,
+    tools.qdisc_add(OPENVPN_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
-    tools.filter_add(LAN_IF, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(OPENVPN_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -122,12 +124,12 @@ def default_class():
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(LAN_IF, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(OPENVPN_IF, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(LAN_IF, parent=classid,
+    tools.qdisc_add(OPENVPN_IF, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
-    tools.filter_add(LAN_IF, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(OPENVPN_IF, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -140,7 +142,7 @@ def apply_qos():
     ceil = MAX_DOWNLOAD
     burst = burst_formula(rate) * 3
     cburst = cburst_formula(rate, burst)
-    tools.class_add(LAN_IF, parent="1:1", classid="1:11",
+    tools.class_add(OPENVPN_IF, parent="1:1", classid="1:11",
                     rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=0)
 
