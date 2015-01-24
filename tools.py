@@ -2,6 +2,7 @@
 # Author: Anthony Ruhier
 
 import subprocess
+from decorators import multiple_interfaces
 from config import DEBUG
 
 
@@ -21,7 +22,8 @@ def launch_command(command, stderr=None):
             print(" ".join(command), file=stderr)
 
 
-def tc_qdisc(action, interface, algorithm, handle=None, parent=None,
+@multiple_interfaces
+def tc_qdisc(interface, action, algorithm, handle=None, parent=None,
              stderr=None, *args, **kwargs):
     """
     Add/change/replace/replace qdisc
@@ -50,6 +52,7 @@ def tc_qdisc(action, interface, algorithm, handle=None, parent=None,
     launch_command(command, stderr)
 
 
+@multiple_interfaces
 def qdisc_add(interface, handle, algorithm, parent=None, *args,
               **kwargs):
     """
@@ -63,10 +66,11 @@ def qdisc_add(interface, handle, algorithm, parent=None, *args,
     :param handle: handle parameter for tc
     :param parent: if is None, the rule will be added as root. (default: None)
     """
-    return tc_qdisc("add", interface, algorithm, handle, parent, *args,
+    return tc_qdisc(interface, "add", algorithm, handle, parent, *args,
                     **kwargs)
 
 
+@multiple_interfaces
 def qdisc_del(interface, algorithm, handle=None, parent=None, *args,
               **kwargs):
     """
@@ -80,11 +84,12 @@ def qdisc_del(interface, algorithm, handle=None, parent=None, *args,
     :param handle: handle parameter for tc (default: None)
     :param parent: if is None, the rule will be added as root. (default: None)
     """
-    return tc_qdisc("delete", interface, algorithm, handle, parent, *args,
+    return tc_qdisc(interface, "delete", algorithm, handle, parent, *args,
                     **kwargs)
 
 
-def qdisc_show(show_format=None, interface=None):
+@multiple_interfaces
+def qdisc_show(interface=None, show_format=None):
     """
     Show qdiscs
 
@@ -118,7 +123,8 @@ def get_child_qdiscid(classid):
     return classid[classid.find(":") + 1:]
 
 
-def tc_class(action, interface, parent, classid=None, algorithm="htb",
+@multiple_interfaces
+def tc_class(interface, action, parent, classid=None, algorithm="htb",
              **kwargs):
     """
     Add/change/replace/replace class
@@ -156,6 +162,7 @@ def tc_class(action, interface, parent, classid=None, algorithm="htb",
     launch_command(command)
 
 
+@multiple_interfaces
 def class_add(interface, parent, classid, algorithm="htb", **kwargs):
     """
     Add class
@@ -170,9 +177,10 @@ def class_add(interface, parent, classid, algorithm="htb", **kwargs):
     :param classid: id for the current class (default: None)
     :param algorithm: algorithm used for this class (default: htb)
     """
-    return tc_class("add", interface, parent, classid, algorithm, **kwargs)
+    return tc_class(interface, "add", parent, classid, algorithm, **kwargs)
 
 
+@multiple_interfaces
 def class_del(interface, parent, classid=None, algorithm="htb", **kwargs):
     """
     Delete class
@@ -187,9 +195,10 @@ def class_del(interface, parent, classid=None, algorithm="htb", **kwargs):
     :param classid: id for the current class (default: None)
     :param algorithm: algorithm used for this class (default: htb)
     """
-    return tc_class("delete", interface, parent, classid, algorithm, **kwargs)
+    return tc_class(interface, "delete", parent, classid, algorithm, **kwargs)
 
 
+@multiple_interfaces
 def class_show(interface, show_format=None):
     """
     Show classes
@@ -212,7 +221,8 @@ def class_show(interface, show_format=None):
     launch_command(command)
 
 
-def tc_filter(action, interface, prio, handle, flowid, parent=None,
+@multiple_interfaces
+def tc_filter(interface, action, prio, handle, flowid, parent=None,
               protocol="ip", **kwargs):
     """
     Add/change/replace/delete filter
@@ -238,6 +248,7 @@ def tc_filter(action, interface, prio, handle, flowid, parent=None,
     launch_command(command)
 
 
+@multiple_interfaces
 def filter_add(interface, parent, prio, handle, flowid, protocol="ip",
                **kwargs):
     """
@@ -253,10 +264,11 @@ def filter_add(interface, parent, prio, handle, flowid, protocol="ip",
     :param flowid: target class
     :param protocol: protocol to filter (default: ip)
     """
-    return tc_filter("add", interface, prio, handle, flowid, parent, protocol,
+    return tc_filter(interface, "add", prio, handle, flowid, parent, protocol,
                      **kwargs)
 
 
+@multiple_interfaces
 def filter_del(interface, prio, handle, flowid, parent=None, protocol="ip",
                **kwargs):
     """
@@ -272,10 +284,11 @@ def filter_del(interface, prio, handle, flowid, parent=None, protocol="ip",
     :param parent: parent class/qdisc (default: None)
     :param protocol: protocol to filter (default: ip)
     """
-    return tc_filter("delete", interface, prio, handle, flowid, parent,
+    return tc_filter(interface, "delete", prio, handle, flowid, parent,
                      protocol, **kwargs)
 
 
+@multiple_interfaces
 def filter_show(interface):
     """
     Show filters
