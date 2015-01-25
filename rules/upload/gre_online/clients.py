@@ -3,12 +3,11 @@
 # QoS for upload
 
 import tools
-from config import LAN_IF, DOWNLOAD, UPLOAD
+from config import INTERFACES, UPLOAD
+from rules.qos_formulas import burst_formula, cburst_formula
 
-MAX_DOWNLOAD = DOWNLOAD
-# Cisco magic burst and cburst formula
-burst_formula = lambda rate: 0.5 * rate/8
-cburst_formula = lambda rate, burst: 1.5 * rate/8 + burst
+GRE_ONLINE = INTERFACES["gre_online"]
+MAX_UPLOAD = UPLOAD * 0.98  # Overhead for the gre tunnel
 
 
 def interactive_class():
@@ -22,17 +21,17 @@ def interactive_class():
     classid = "1:110"
     prio = 10
     mark = 110
-    rate = MAX_DOWNLOAD * 10/100
-    ceil = MAX_DOWNLOAD * 90/100
+    rate = MAX_UPLOAD * 10/100
+    ceil = MAX_UPLOAD * 90/100
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(LAN_IF, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(GRE_ONLINE, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(LAN_IF, parent=classid,
+    tools.qdisc_add(GRE_ONLINE, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="pfifo")
-    tools.filter_add(LAN_IF, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(GRE_ONLINE, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -40,24 +39,24 @@ def tcp_ack_class():
     """
     Class for TCP ACK.
 
-    It's important to receive quickly the TCP ACK when uploading. Uses htb then
-    sfq.
+    It's important to let the ACKs leave the network as fast
+    as possible when a host of the network is downloading. Uses htb then sfq.
     """
     parent = "1:11"
     classid = "1:120"
     prio = 20
     mark = 120
-    rate = UPLOAD / 10
-    ceil = MAX_DOWNLOAD / 10
+    rate = MAX_UPLOAD / 4
+    ceil = MAX_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(LAN_IF, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(GRE_ONLINE, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(LAN_IF, parent=classid,
+    tools.qdisc_add(GRE_ONLINE, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
-    tools.filter_add(LAN_IF, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(GRE_ONLINE, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -73,17 +72,17 @@ def ssh_class():
     classid = "1:1100"
     prio = 30
     mark = 1100
-    rate = 400
-    ceil = MAX_DOWNLOAD
+    rate = MAX_UPLOAD * 10/100
+    ceil = MAX_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(LAN_IF, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(GRE_ONLINE, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(LAN_IF, parent=classid,
+    tools.qdisc_add(GRE_ONLINE, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
-    tools.filter_add(LAN_IF, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(GRE_ONLINE, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -95,17 +94,17 @@ def http_class():
     classid = "1:1200"
     prio = 40
     mark = 1200
-    rate = MAX_DOWNLOAD * 10/100
-    ceil = MAX_DOWNLOAD
+    rate = MAX_UPLOAD * 20/100
+    ceil = MAX_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(LAN_IF, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(GRE_ONLINE, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(LAN_IF, parent=classid,
+    tools.qdisc_add(GRE_ONLINE, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
-    tools.filter_add(LAN_IF, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(GRE_ONLINE, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -117,17 +116,17 @@ def default_class():
     classid = "1:1500"
     prio = 100
     mark = 1500
-    rate = MAX_DOWNLOAD * 20/100
-    ceil = MAX_DOWNLOAD
+    rate = MAX_UPLOAD/2
+    ceil = MAX_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(LAN_IF, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(GRE_ONLINE, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(LAN_IF, parent=classid,
+    tools.qdisc_add(GRE_ONLINE, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
-    tools.filter_add(LAN_IF, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(GRE_ONLINE, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -136,11 +135,11 @@ def apply_qos():
     Apply the QoS for the OUTPUT
     """
     # Creating the client branch (htb)
-    rate = DOWNLOAD * 30/100
-    ceil = MAX_DOWNLOAD
+    rate = UPLOAD/2
+    ceil = MAX_UPLOAD
     burst = burst_formula(rate) * 3
     cburst = cburst_formula(rate, burst)
-    tools.class_add(LAN_IF, parent="1:1", classid="1:11",
+    tools.class_add(GRE_ONLINE, parent="1:1", classid="1:11",
                     rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=0)
 
