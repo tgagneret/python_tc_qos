@@ -4,12 +4,10 @@
 
 import tools
 from config import LAN_IF, DOWNLOAD, UPLOAD
+from rules.qos_formulas import burst_formula, cburst_formula
 
 MIN_DOWNLOAD = DOWNLOAD/10
 MAX_DOWNLOAD = DOWNLOAD
-# Cisco magic burst and cburst formula
-burst_formula = lambda rate: 0.5 * rate/8
-cburst_formula = lambda rate, burst: 0.5 * rate/8 + burst
 
 
 def interactive_class():

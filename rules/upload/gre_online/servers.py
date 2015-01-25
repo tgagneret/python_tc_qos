@@ -3,13 +3,12 @@
 # QoS for upload
 
 import tools
-from config import PUBLIC_IF, UPLOAD
+from config import INTERFACES, UPLOAD
+from rules.qos_formulas import burst_formula, cburst_formula
 
 MIN_UPLOAD = UPLOAD/10
-MAX_UPLOAD = UPLOAD
-# Cisco magic burst and cburst formula
-burst_formula = lambda rate: 0.5 * rate/8
-cburst_formula = lambda rate, burst: 0.5 * rate/8 + burst
+MAX_UPLOAD = UPLOAD * 0.98  # Overhead of the gre tunnel
+GRE_ONLINE = INTERFACES["gre_online"]
 
 
 def interactive_class():
@@ -28,12 +27,12 @@ def interactive_class():
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(GRE_ONLINE, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(PUBLIC_IF, parent=classid,
+    tools.qdisc_add(GRE_ONLINE, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="pfifo")
-    tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(GRE_ONLINE, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -52,12 +51,12 @@ def openvpn_class():
     burst = burst_formula(rate) * 2
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(GRE_ONLINE, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(PUBLIC_IF, parent=classid,
+    tools.qdisc_add(GRE_ONLINE, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
-    tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(GRE_ONLINE, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -77,12 +76,12 @@ def tcp_ack_class():
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(GRE_ONLINE, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(PUBLIC_IF, parent=classid,
+    tools.qdisc_add(GRE_ONLINE, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
-    tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(GRE_ONLINE, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -102,12 +101,12 @@ def irc_class():
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(GRE_ONLINE, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(PUBLIC_IF, parent=classid,
+    tools.qdisc_add(GRE_ONLINE, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
-    tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(GRE_ONLINE, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -126,12 +125,12 @@ def default_class():
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(GRE_ONLINE, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(PUBLIC_IF, parent=classid,
+    tools.qdisc_add(GRE_ONLINE, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
-    tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(GRE_ONLINE, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -147,15 +146,15 @@ def torrents_class():
     mark = 2600
     rate = MIN_UPLOAD
     ceil = MAX_UPLOAD
-    burst = 0.5 * rate/8
+    burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(PUBLIC_IF, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(GRE_ONLINE, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(PUBLIC_IF, parent=classid,
+    tools.qdisc_add(GRE_ONLINE, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
-    tools.filter_add(PUBLIC_IF, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(GRE_ONLINE, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -169,7 +168,7 @@ def apply_qos():
     ceil = MAX_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
-    tools.class_add(PUBLIC_IF, parent="1:1", classid="1:12", rate=rate,
+    tools.class_add(GRE_ONLINE, parent="1:1", classid="1:12", rate=rate,
                     ceil=ceil, burst=burst, cburst=cburst, prio=1)
 
     interactive_class()
