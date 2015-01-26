@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Author: Anthony Ruhier
 # Set QoS rules
 
@@ -27,7 +27,12 @@ def apply_qos():
 
 def reset_qos():
     print("Removing tc rules")
-    tools.qdisc_del(INTERFACES.values(), "htb", stderr=subprocess.DEVNULL)
+    try:
+        tools.qdisc_del(INTERFACES.values(), "htb", stderr=subprocess.DEVNULL)
+    except AttributeError:
+        # Constant subprocess.DEVNULL not defined in python 3.2
+        with open("/dev/null", "w") as f:
+            tools.qdisc_del(INTERFACES.values(), "htb", stderr=f)
     return
 
 

@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # Author: Anthony Ruhier
 
+import os
 import subprocess
 from decorators import multiple_interfaces
 from config import DEBUG
@@ -16,8 +17,15 @@ def launch_command(command, stderr=None):
     else:
         r = subprocess.call(command, stderr=stderr)
         if r != 0:
-            if stderr == subprocess.DEVNULL:
-                return
+            try:
+                if stderr == subprocess.DEVNULL:
+                    return
+            except AttributeError:
+                # Constant is not defined in python 3.2
+                if stderr.name == "/dev/null":
+                    return
+            except:
+                pass
             print("Error: ", file=stderr)
             print(" ".join(command), file=stderr)
 
