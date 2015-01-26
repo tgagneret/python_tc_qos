@@ -6,8 +6,8 @@ import tools
 from config import INTERFACES, UPLOAD
 from rules.qos_formulas import burst_formula, cburst_formula
 
-MAX_UPLOAD = UPLOAD * 0.98
-GRE_ONLINE = INTERFACES["gre_online"]
+MAX_UPLOAD = UPLOAD
+GRE_HOME = INTERFACES["gre_home"]
 
 
 def interactive_class():
@@ -26,12 +26,12 @@ def interactive_class():
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(GRE_ONLINE, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(GRE_HOME, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(GRE_ONLINE, parent=classid,
+    tools.qdisc_add(GRE_HOME, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="pfifo")
-    tools.filter_add(GRE_ONLINE, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(GRE_HOME, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -39,24 +39,24 @@ def tcp_ack_class():
     """
     Class for TCP ACK.
 
-    It's important to let the ACKs leave the network as fast
-    as possible when a host of the network is downloading. Uses htb then sfq.
+    It's important to receive quickly the TCP ACK when uploading. Uses htb then
+    sfq.
     """
     parent = "1:11"
     classid = "1:120"
     prio = 20
     mark = 120
-    rate = MAX_UPLOAD / 4
-    ceil = MAX_UPLOAD
+    rate = UPLOAD / 10
+    ceil = MAX_UPLOAD / 10
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(GRE_ONLINE, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(GRE_HOME, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(GRE_ONLINE, parent=classid,
+    tools.qdisc_add(GRE_HOME, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
-    tools.filter_add(GRE_ONLINE, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(GRE_HOME, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -72,17 +72,17 @@ def ssh_class():
     classid = "1:1100"
     prio = 30
     mark = 1100
-    rate = MAX_UPLOAD * 10/100
+    rate = 400
     ceil = MAX_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(GRE_ONLINE, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(GRE_HOME, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(GRE_ONLINE, parent=classid,
+    tools.qdisc_add(GRE_HOME, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
-    tools.filter_add(GRE_ONLINE, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(GRE_HOME, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -94,17 +94,17 @@ def http_class():
     classid = "1:1200"
     prio = 40
     mark = 1200
-    rate = MAX_UPLOAD * 20/100
+    rate = MAX_UPLOAD * 10/100
     ceil = MAX_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(GRE_ONLINE, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(GRE_HOME, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(GRE_ONLINE, parent=classid,
+    tools.qdisc_add(GRE_HOME, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
-    tools.filter_add(GRE_ONLINE, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(GRE_HOME, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -116,17 +116,17 @@ def default_class():
     classid = "1:1500"
     prio = 100
     mark = 1500
-    rate = MAX_UPLOAD/2
+    rate = MAX_UPLOAD * 20/100
     ceil = MAX_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(GRE_ONLINE, parent, classid, rate=rate, ceil=ceil,
+    tools.class_add(GRE_HOME, parent, classid, rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(GRE_ONLINE, parent=classid,
+    tools.qdisc_add(GRE_HOME, parent=classid,
                     handle=tools.get_child_qdiscid(classid),
                     algorithm="sfq", perturb=10)
-    tools.filter_add(GRE_ONLINE, parent="1:0", prio=prio, handle=mark,
+    tools.filter_add(GRE_HOME, parent="1:0", prio=prio, handle=mark,
                      flowid=classid)
 
 
@@ -135,11 +135,11 @@ def apply_qos():
     Apply the QoS for the OUTPUT
     """
     # Creating the client branch (htb)
-    rate = UPLOAD/2
+    rate = UPLOAD * 30/100
     ceil = MAX_UPLOAD
-    burst = burst_formula(rate)
+    burst = burst_formula(rate) * 3
     cburst = cburst_formula(rate, burst)
-    tools.class_add(GRE_ONLINE, parent="1:1", classid="1:11",
+    tools.class_add(GRE_HOME, parent="1:1", classid="1:11",
                     rate=rate, ceil=ceil,
                     burst=burst, cburst=cburst, prio=0)
 

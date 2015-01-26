@@ -1,8 +1,7 @@
 #!/usr/bin/python
 
-from rules import download, upload
+from rules import upload
 
 
 def apply_qos():
-    download.apply_qos()
     upload.apply_qos()
