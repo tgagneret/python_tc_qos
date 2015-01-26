@@ -22,7 +22,7 @@ def gre_online():
     classid = "1:100"
     prio = 20
     mark = 100
-    rate = MIN_UPLOAD
+    rate = UPLOAD * 0.8
     ceil = MAX_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
@@ -45,7 +45,7 @@ def default_class():
     """
     parent = "1:1"
     classid = "1:500"
-    prio = 20
+    prio = 50
     mark = 500
     rate = MIN_UPLOAD
     ceil = MAX_UPLOAD

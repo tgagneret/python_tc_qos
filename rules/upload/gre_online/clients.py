@@ -6,8 +6,8 @@ import tools
 from config import INTERFACES, UPLOAD
 from rules.qos_formulas import burst_formula, cburst_formula
 
+MAX_UPLOAD = UPLOAD * 0.98
 GRE_ONLINE = INTERFACES["gre_online"]
-MAX_UPLOAD = UPLOAD * 0.98  # Overhead for the gre tunnel
 
 
 def interactive_class():
@@ -137,7 +137,7 @@ def apply_qos():
     # Creating the client branch (htb)
     rate = UPLOAD/2
     ceil = MAX_UPLOAD
-    burst = burst_formula(rate) * 3
+    burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
     tools.class_add(GRE_ONLINE, parent="1:1", classid="1:11",
                     rate=rate, ceil=ceil,

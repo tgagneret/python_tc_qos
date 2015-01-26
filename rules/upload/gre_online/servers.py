@@ -6,8 +6,8 @@ import tools
 from config import INTERFACES, UPLOAD
 from rules.qos_formulas import burst_formula, cburst_formula
 
+MAX_UPLOAD = UPLOAD * 0.98
 MIN_UPLOAD = UPLOAD/10
-MAX_UPLOAD = UPLOAD * 0.98  # Overhead of the gre tunnel
 GRE_ONLINE = INTERFACES["gre_online"]
 
 
