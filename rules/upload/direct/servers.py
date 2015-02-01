@@ -21,7 +21,7 @@ class GRE_online(SFQ_class):
     classid = "1:100"
     prio = 20
     mark = 100
-    rate = UPLOAD * 0.8
+    rate = UPLOAD * 0.90
     ceil = MAX_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
