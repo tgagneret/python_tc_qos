@@ -1,18 +1,24 @@
 #!/usr/bin/python
 
-import tools
 from config import INTERFACES, UPLOAD
-from rules.upload.gre_online import clients, servers
+from built_in_classes import Root_tc_class
+from .clients import Main as Clients
+from .servers import Main as Servers
 
 MAX_UPLOAD = UPLOAD * 0.98
 
 
 def apply_qos():
     GRE_ONLINE = INTERFACES["gre_online"]
-    # Creating the HTB root qdisc
-    tools.qdisc_add(GRE_ONLINE, "1:", "htb", default=1500)
-    # Creating the main branch (htb)
-    tools.class_add(GRE_ONLINE, parent="1:0", classid="1:1", rate=UPLOAD,
-                    ceil=MAX_UPLOAD, burst=UPLOAD/8)
-    clients.apply_qos()
-    servers.apply_qos()
+    root_class = Root_tc_class(
+            interface=GRE_ONLINE,
+            rate=UPLOAD,
+            ceil=MAX_UPLOAD,
+            burst=UPLOAD/8,
+            qdisc_prefix_id="1:",
+            default=1500
+        )
+    root_class.add_child(Clients())
+    root_class.add_child(Servers())
+
+    root_class.apply_qos()

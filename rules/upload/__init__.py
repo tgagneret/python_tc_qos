@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from rules.upload import direct, gre_online
+from . import direct, gre_online
 
 
 def apply_qos():
