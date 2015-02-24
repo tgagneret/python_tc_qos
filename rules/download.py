@@ -2,25 +2,20 @@
 # Author: Anthony Ruhier
 # QoS for upload
 
-import tools
-from config import INTERFACES, DOWNLOAD, UPLOAD
-
-OPENVPN_IF = INTERFACES["openvpn"]
+from config import DOWNLOAD, UPLOAD
+from rules.qos_formulas import burst_formula, cburst_formula
+from built_in_classes import PFIFO_class, SFQ_class
 
 MAX_DOWNLOAD = DOWNLOAD
-# Cisco magic burst and cburst formula
-burst_formula = lambda rate: 0.5 * rate/8
-cburst_formula = lambda rate, burst: 1.5 * rate/8 + burst
 
 
-def interactive_class():
+class Interactive(PFIFO_class):
     """
     Interactive Class, for low latency, high priority packets such as VOIP and
     DNS.
 
     Low priority, pass before everything else. Uses htb then pfifo.
     """
-    parent = "1:11"
     classid = "1:110"
     prio = 10
     mark = 110
@@ -29,23 +24,14 @@ def interactive_class():
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(OPENVPN_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(OPENVPN_IF, parent=classid,
-                    handle=tools.get_child_qdiscid(classid),
-                    algorithm="pfifo")
-    tools.filter_add(OPENVPN_IF, parent="1:0", prio=prio, handle=mark,
-                     flowid=classid)
 
-
-def tcp_ack_class():
+class TCP_ack(SFQ_class):
     """
     Class for TCP ACK.
 
     It's important to receive quickly the TCP ACK when uploading. Uses htb then
     sfq.
     """
-    parent = "1:11"
     classid = "1:120"
     prio = 20
     mark = 120
@@ -54,16 +40,8 @@ def tcp_ack_class():
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(OPENVPN_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(OPENVPN_IF, parent=classid,
-                    handle=tools.get_child_qdiscid(classid),
-                    algorithm="sfq", perturb=10)
-    tools.filter_add(OPENVPN_IF, parent="1:0", prio=prio, handle=mark,
-                     flowid=classid)
 
-
-def ssh_class():
+class SSH(SFQ_class):
     """
     Class for SSH connections.
 
@@ -71,7 +49,6 @@ def ssh_class():
     SFQ will mix the packets if there are several SSH connections in parallel
     and ensure that none has the priority
     """
-    parent = "1:11"
     classid = "1:1100"
     prio = 30
     mark = 1100
@@ -80,20 +57,11 @@ def ssh_class():
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(OPENVPN_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(OPENVPN_IF, parent=classid,
-                    handle=tools.get_child_qdiscid(classid),
-                    algorithm="sfq", perturb=10)
-    tools.filter_add(OPENVPN_IF, parent="1:0", prio=prio, handle=mark,
-                     flowid=classid)
 
-
-def http_class():
+class HTTP(SFQ_class):
     """
     Class for HTTP/HTTPS connections.
     """
-    parent = "1:11"
     classid = "1:1200"
     prio = 40
     mark = 1200
@@ -102,20 +70,11 @@ def http_class():
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
-    tools.class_add(OPENVPN_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(OPENVPN_IF, parent=classid,
-                    handle=tools.get_child_qdiscid(classid),
-                    algorithm="sfq", perturb=10)
-    tools.filter_add(OPENVPN_IF, parent="1:0", prio=prio, handle=mark,
-                     flowid=classid)
 
-
-def default_class():
+class Default(SFQ_class):
     """
     Default class
     """
-    parent = "1:11"
     classid = "1:1500"
     prio = 100
     mark = 1500
@@ -123,31 +82,3 @@ def default_class():
     ceil = MAX_DOWNLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
-
-    tools.class_add(OPENVPN_IF, parent, classid, rate=rate, ceil=ceil,
-                    burst=burst, cburst=cburst, prio=prio)
-    tools.qdisc_add(OPENVPN_IF, parent=classid,
-                    handle=tools.get_child_qdiscid(classid),
-                    algorithm="sfq", perturb=10)
-    tools.filter_add(OPENVPN_IF, parent="1:0", prio=prio, handle=mark,
-                     flowid=classid)
-
-
-def apply_qos():
-    """
-    Apply the QoS for the OUTPUT
-    """
-    # Creating the client branch (htb)
-    rate = DOWNLOAD * 30/100
-    ceil = MAX_DOWNLOAD
-    burst = burst_formula(rate) * 3
-    cburst = cburst_formula(rate, burst)
-    tools.class_add(OPENVPN_IF, parent="1:1", classid="1:11",
-                    rate=rate, ceil=ceil,
-                    burst=burst, cburst=cburst, prio=0)
-
-    interactive_class()
-    tcp_ack_class()
-    ssh_class()
-    http_class()
-    default_class()

@@ -1,17 +1,24 @@
 #!/usr/bin/python
 
-import tools
 from config import INTERFACES, DOWNLOAD
-from rules import download
-
-burst_formula = lambda rate: 0.5 * rate/8
+from built_in_classes import Root_tc_class
+from .download import Interactive, TCP_ack, SSH, HTTP, Default
 
 
 def apply_qos():
-    openvpn_if = INTERFACES["openvpn"]
-    # Creating the HTB root qdisc
-    tools.qdisc_add(openvpn_if, "1:", "htb", default=1500)
-    # Creating the main branch (htb)
-    tools.class_add(openvpn_if, parent="1:0", classid="1:1", rate=DOWNLOAD,
-                    ceil=DOWNLOAD, burst=DOWNLOAD/8)
-    download.apply_qos()
+    OPENVPN_IF = INTERFACES["openvpn"]
+    root_class = Root_tc_class(
+            interface=OPENVPN_IF,
+            rate=DOWNLOAD * 30/100,
+            ceil=DOWNLOAD,
+            burst=DOWNLOAD/8,
+            qdisc_prefix_id="1:",
+            default=1500
+        )
+    root_class.add_child(Interactive())
+    root_class.add_child(TCP_ack())
+    root_class.add_child(SSH())
+    root_class.add_child(HTTP())
+    root_class.add_child(Default())
+
+    root_class.apply_qos()
