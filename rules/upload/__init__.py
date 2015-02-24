@@ -1,15 +1,23 @@
 #!/usr/bin/python
 
-import tools
 from config import INTERFACES, UPLOAD
 from rules.qos_formulas import burst_formula
-from rules.upload import clients, servers
+from built_in_classes import Root_tc_class
+from .clients import Main as Clients
+from .servers import Main as Servers
 
 
 def apply_qos():
     GRE_HOME = INTERFACES["gre_home"]
-    tools.qdisc_add(GRE_HOME, "1:", "htb", default=1500)
-    tools.class_add(GRE_HOME, parent="1:0", classid="1:1", rate=UPLOAD,
-                    ceil=UPLOAD, burst=burst_formula(UPLOAD))
-    clients.apply_qos()
-    servers.apply_qos()
+    root_class = Root_tc_class(
+        interface=GRE_HOME,
+        rate=UPLOAD,
+        ceil=UPLOAD,
+        burst=burst_formula(UPLOAD),
+        qdisc_prefix_id="1:",
+        default=1500
+    )
+    root_class.add_child(Clients())
+    root_class.add_child(Servers())
+
+    root_class.apply_qos()
