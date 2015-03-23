@@ -10,7 +10,6 @@ def apply_qos():
     root_class = Root_tc_class(
             interface=PUBLIC_IF,
             rate=UPLOAD,
-            ceil=UPLOAD,
             burst=UPLOAD/8,
             qdisc_prefix_id="1:",
             default=500

@@ -6,7 +6,7 @@ from config import UPLOAD
 from rules.qos_formulas import burst_formula, cburst_formula
 from built_in_classes import PFIFO_class, SFQ_class, Basic_tc_class
 
-MAX_UPLOAD = UPLOAD * 0.98
+MAX_UPLOAD = UPLOAD * 0.93
 
 
 class Interactive(PFIFO_class):

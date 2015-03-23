@@ -4,13 +4,13 @@
 
 from config import UPLOAD
 from rules.qos_formulas import burst_formula, cburst_formula
-from built_in_classes import SFQ_class
+from built_in_classes import PFIFO_class, SFQ_class
 
-MIN_UPLOAD = UPLOAD/10
+MIN_UPLOAD = 200
 MAX_UPLOAD = UPLOAD
 
 
-class GRE_online(SFQ_class):
+class GRE_online(PFIFO_class):
     """
     Class for gre_tunnel
 
@@ -54,5 +54,5 @@ class Torrents(SFQ_class):
     mark = 600
     rate = MIN_UPLOAD
     ceil = MAX_UPLOAD
-    burst = 0.5 * rate/8
+    burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
