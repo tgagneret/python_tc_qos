@@ -20,7 +20,7 @@ class Interactive(PFIFO_class):
     prio = 10
     mark = 110
     rate = MAX_UPLOAD * 10/100
-    ceil = MAX_UPLOAD * 90/100
+    ceil = MAX_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
