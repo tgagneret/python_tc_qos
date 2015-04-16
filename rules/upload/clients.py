@@ -86,7 +86,7 @@ class Default(SFQ_class):
 
 class Main(Basic_tc_class):
     classid = "1:11"
-    rate = UPLOAD * 30/100
+    rate = UPLOAD * 70/100
     ceil = MAX_UPLOAD
     burst = burst_formula(rate) * 3
     cburst = cburst_formula(rate, burst)
