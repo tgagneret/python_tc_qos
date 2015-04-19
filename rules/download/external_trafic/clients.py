@@ -89,7 +89,7 @@ class Main(Basic_tc_class):
     classid = "1:11"
     rate = DOWNLOAD * 70/100
     ceil = DOWNLOAD
-    burst = burst_formula(rate) * 3
+    burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
     prio = 0
 

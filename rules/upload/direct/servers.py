@@ -21,7 +21,7 @@ class GRE_online(PFIFO_class):
     classid = "1:100"
     prio = 20
     mark = 100
-    rate = UPLOAD * 0.90
+    rate = UPLOAD - MIN_UPLOAD
     ceil = UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
