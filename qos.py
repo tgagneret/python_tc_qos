@@ -27,7 +27,8 @@ def apply_qos():
 
 def reset_qos():
     print("Removing tc rules")
-    tools.qdisc_del(INTERFACES.values(), "htb", stderr=subprocess.DEVNULL)
+    if_names = [interface["name"] for interface in INTERFACES.values()]
+    tools.qdisc_del(if_names, "htb", stderr=subprocess.DEVNULL)
     return
 
 

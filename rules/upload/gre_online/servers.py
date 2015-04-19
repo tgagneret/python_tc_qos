@@ -2,12 +2,12 @@
 # Author: Anthony Ruhier
 # QoS for upload
 
-from config import UPLOAD
+from config import INTERFACES
 from rules.qos_formulas import burst_formula, cburst_formula
 from built_in_classes import PFIFO_class, SFQ_class, Basic_tc_class
 
-MAX_UPLOAD = UPLOAD * 0.93
-MIN_UPLOAD = UPLOAD/10
+GRE_UPLOAD = INTERFACES["gre_online"]["speed"]
+MIN_UPLOAD = GRE_UPLOAD/10
 
 
 class Interactive(PFIFO_class):
@@ -20,8 +20,8 @@ class Interactive(PFIFO_class):
     classid = "1:210"
     prio = 10
     mark = 210
-    rate = MAX_UPLOAD * 10/100
-    ceil = MAX_UPLOAD * 90/100
+    rate = GRE_UPLOAD * 10/100
+    ceil = GRE_UPLOAD * 90/100
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -35,8 +35,8 @@ class OpenVPN(SFQ_class):
     classid = "1:215"
     prio = 15
     mark = 215
-    rate = MAX_UPLOAD/3
-    ceil = MAX_UPLOAD
+    rate = GRE_UPLOAD/3
+    ceil = GRE_UPLOAD
     burst = burst_formula(rate) * 2
     cburst = cburst_formula(rate, burst)
 
@@ -52,7 +52,7 @@ class TCP_ack(SFQ_class):
     prio = 20
     mark = 220
     rate = MIN_UPLOAD
-    ceil = MAX_UPLOAD
+    ceil = GRE_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -68,7 +68,7 @@ class IRC(SFQ_class):
     prio = 30
     mark = 2100
     rate = 100
-    ceil = MAX_UPLOAD/5
+    ceil = GRE_UPLOAD/5
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -83,7 +83,7 @@ class Default(SFQ_class):
     prio = 100
     mark = 2500
     rate = MIN_UPLOAD
-    ceil = MAX_UPLOAD
+    ceil = GRE_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -98,7 +98,7 @@ class Torrents(SFQ_class):
     prio = 150
     mark = 2600
     rate = MIN_UPLOAD
-    ceil = MAX_UPLOAD
+    ceil = GRE_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -106,7 +106,7 @@ class Torrents(SFQ_class):
 class Main(Basic_tc_class):
     classid = "1:12"
     rate = MIN_UPLOAD
-    ceil = MAX_UPLOAD
+    ceil = GRE_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
     prio = 1

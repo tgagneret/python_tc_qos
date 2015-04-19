@@ -2,12 +2,12 @@
 # Author: Anthony Ruhier
 # QoS for upload
 
-from config import UPLOAD
+from config import INTERFACES
 from rules.qos_formulas import burst_formula, cburst_formula
 from built_in_classes import PFIFO_class, SFQ_class
 
+UPLOAD = INTERFACES["public_if"]["speed"]
 MIN_UPLOAD = 200
-MAX_UPLOAD = UPLOAD
 
 
 class GRE_online(PFIFO_class):
@@ -22,7 +22,7 @@ class GRE_online(PFIFO_class):
     prio = 20
     mark = 100
     rate = UPLOAD * 0.90
-    ceil = MAX_UPLOAD
+    ceil = UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -37,8 +37,8 @@ class Default(SFQ_class):
     classid = "1:500"
     prio = 50
     mark = 500
-    rate = MIN_UPLOAD
-    ceil = MAX_UPLOAD
+    rate = UPLOAD
+    ceil = UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -53,6 +53,6 @@ class Torrents(SFQ_class):
     prio = 100
     mark = 600
     rate = MIN_UPLOAD
-    ceil = MAX_UPLOAD
+    ceil = UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)

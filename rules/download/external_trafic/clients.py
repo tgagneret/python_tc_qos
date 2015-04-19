@@ -2,11 +2,12 @@
 # Author: Anthony Ruhier
 # QoS for upload
 
-from config import DOWNLOAD, UPLOAD
+from config import INTERFACES
 from rules.qos_formulas import burst_formula, cburst_formula
 from built_in_classes import PFIFO_class, SFQ_class, Basic_tc_class
 
-MAX_DOWNLOAD = DOWNLOAD
+DOWNLOAD = INTERFACES["lan_if"]["speed"]
+UPLOAD = INTERFACES["public_if"]["speed"]
 
 
 class Interactive(PFIFO_class):
@@ -19,8 +20,8 @@ class Interactive(PFIFO_class):
     classid = "1:110"
     prio = 10
     mark = 110
-    rate = MAX_DOWNLOAD * 10/100
-    ceil = MAX_DOWNLOAD * 90/100
+    rate = DOWNLOAD * 30/100
+    ceil = DOWNLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -36,7 +37,7 @@ class TCP_ack(SFQ_class):
     prio = 20
     mark = 120
     rate = UPLOAD / 10
-    ceil = MAX_DOWNLOAD / 10
+    ceil = DOWNLOAD / 10
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -53,7 +54,7 @@ class SSH(SFQ_class):
     prio = 30
     mark = 1100
     rate = 400
-    ceil = MAX_DOWNLOAD
+    ceil = DOWNLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -65,8 +66,8 @@ class HTTP(SFQ_class):
     classid = "1:1200"
     prio = 40
     mark = 1200
-    rate = MAX_DOWNLOAD * 10/100
-    ceil = MAX_DOWNLOAD
+    rate = DOWNLOAD * 10/100
+    ceil = DOWNLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -78,16 +79,16 @@ class Default(SFQ_class):
     classid = "1:1500"
     prio = 100
     mark = 1500
-    rate = MAX_DOWNLOAD * 20/100
-    ceil = MAX_DOWNLOAD
+    rate = DOWNLOAD * 20/100
+    ceil = DOWNLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
 
 class Main(Basic_tc_class):
     classid = "1:11"
-    rate = DOWNLOAD * 30/100
-    ceil = MAX_DOWNLOAD
+    rate = DOWNLOAD * 70/100
+    ceil = DOWNLOAD
     burst = burst_formula(rate) * 3
     cburst = cburst_formula(rate, burst)
     prio = 0

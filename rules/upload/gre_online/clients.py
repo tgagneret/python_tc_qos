@@ -2,11 +2,11 @@
 # Author: Anthony Ruhier
 # QoS for upload
 
-from config import UPLOAD
+from config import INTERFACES
 from rules.qos_formulas import burst_formula, cburst_formula
 from built_in_classes import PFIFO_class, SFQ_class, Basic_tc_class
 
-MAX_UPLOAD = UPLOAD * 0.93
+GRE_UPLOAD = INTERFACES["gre_online"]["speed"]
 
 
 class Interactive(PFIFO_class):
@@ -19,8 +19,8 @@ class Interactive(PFIFO_class):
     classid = "1:110"
     prio = 10
     mark = 110
-    rate = MAX_UPLOAD * 10/100
-    ceil = MAX_UPLOAD * 90/100
+    rate = GRE_UPLOAD * 10/100
+    ceil = GRE_UPLOAD * 90/100
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -35,8 +35,8 @@ class TCP_ack(SFQ_class):
     classid = "1:120"
     prio = 20
     mark = 120
-    rate = MAX_UPLOAD / 4
-    ceil = MAX_UPLOAD
+    rate = GRE_UPLOAD / 4
+    ceil = GRE_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -52,8 +52,8 @@ class SSH(SFQ_class):
     classid = "1:1100"
     prio = 30
     mark = 1100
-    rate = MAX_UPLOAD * 10/100
-    ceil = MAX_UPLOAD
+    rate = GRE_UPLOAD * 10/100
+    ceil = GRE_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -65,8 +65,8 @@ class HTTP(SFQ_class):
     classid = "1:1200"
     prio = 40
     mark = 1200
-    rate = MAX_UPLOAD * 20/100
-    ceil = MAX_UPLOAD
+    rate = GRE_UPLOAD * 20/100
+    ceil = GRE_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -78,16 +78,16 @@ class Default(SFQ_class):
     classid = "1:1500"
     prio = 100
     mark = 1500
-    rate = MAX_UPLOAD/2
-    ceil = MAX_UPLOAD
+    rate = GRE_UPLOAD/2
+    ceil = GRE_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
 
 class Main(Basic_tc_class):
     classid = "1:11"
-    rate = UPLOAD/2
-    ceil = MAX_UPLOAD
+    rate = GRE_UPLOAD/2
+    ceil = GRE_UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
     prio = 0

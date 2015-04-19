@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from config import INTERFACES, UPLOAD
+from config import INTERFACES
 from built_in_classes import Root_tc_class
 from .servers import GRE_online, Default, Torrents
 
@@ -8,9 +8,9 @@ from .servers import GRE_online, Default, Torrents
 def apply_qos():
     PUBLIC_IF = INTERFACES["public_if"]
     root_class = Root_tc_class(
-            interface=PUBLIC_IF,
-            rate=UPLOAD,
-            burst=UPLOAD/8,
+            interface=PUBLIC_IF["name"],
+            rate=PUBLIC_IF["speed"],
+            burst=PUBLIC_IF["speed"]/8,
             qdisc_prefix_id="1:",
             default=500
         )
