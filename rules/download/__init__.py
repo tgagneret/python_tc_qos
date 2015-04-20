@@ -15,7 +15,7 @@ def apply_qos():
             ceil=LAN_IF["if_speed"],
             burst=burst_formula(LAN_IF["if_speed"])*3,
             qdisc_prefix_id="1:",
-            default=10
+            default=10,
         )
 
     root_class.add_child(InterVlan())

@@ -19,4 +19,3 @@ class InterVlan(PFIFO_class):
     burst = burst_formula(rate) * 3
     prio = 0
     mark = 10
-    r2q = 20
