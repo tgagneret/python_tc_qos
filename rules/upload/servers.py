@@ -51,7 +51,7 @@ class TCP_ack(SFQ_class):
     classid = "1:220"
     prio = 20
     mark = 220
-    rate = UPLOAD / 10
+    rate = 5000 / 10
     ceil = UPLOAD / 10
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
@@ -68,7 +68,7 @@ class IRC(SFQ_class):
     prio = 30
     mark = 2100
     rate = 100
-    ceil = UPLOAD/100
+    ceil = UPLOAD/2
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 

@@ -19,7 +19,7 @@ class Interactive(PFIFO_class):
     classid = "1:110"
     prio = 10
     mark = 110
-    rate = UPLOAD * 10/100
+    rate = UPLOAD * 30/100
     ceil = UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
@@ -88,7 +88,7 @@ class Main(Basic_tc_class):
     classid = "1:11"
     rate = UPLOAD * 70/100
     ceil = UPLOAD
-    burst = burst_formula(rate) * 3
+    burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
     prio = 0
 
