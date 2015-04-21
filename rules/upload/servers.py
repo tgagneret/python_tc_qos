@@ -2,12 +2,12 @@
 # Author: Anthony Ruhier
 # QoS for upload
 
-from config import UPLOAD
+from config import INTERFACES
 from rules.qos_formulas import burst_formula, cburst_formula
 from built_in_classes import PFIFO_class, SFQ_class, Basic_tc_class
 
+UPLOAD = INTERFACES["gre-home"]["speed"]
 MIN_UPLOAD = UPLOAD/10
-MAX_UPLOAD = UPLOAD
 
 
 class Interactive(PFIFO_class):
@@ -20,8 +20,8 @@ class Interactive(PFIFO_class):
     classid = "1:210"
     prio = 10
     mark = 210
-    rate = MAX_UPLOAD * 10/100
-    ceil = MAX_UPLOAD
+    rate = UPLOAD * 10/100
+    ceil = UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -52,7 +52,7 @@ class TCP_ack(SFQ_class):
     prio = 20
     mark = 220
     rate = UPLOAD / 10
-    ceil = MAX_UPLOAD / 10
+    ceil = UPLOAD / 10
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -68,7 +68,7 @@ class IRC(SFQ_class):
     prio = 30
     mark = 2100
     rate = 100
-    ceil = MAX_UPLOAD/100
+    ceil = UPLOAD/100
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -83,8 +83,8 @@ class Downloads(SFQ_class):
     classid = "1:2600"
     prio = 50
     mark = 2600
-    rate = MAX_UPLOAD * 20/100
-    ceil = MAX_UPLOAD
+    rate = UPLOAD * 20/100
+    ceil = UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -99,7 +99,7 @@ class Default(SFQ_class):
     prio = 100
     mark = 2500
     rate = MIN_UPLOAD
-    ceil = MAX_UPLOAD
+    ceil = UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -107,7 +107,7 @@ class Default(SFQ_class):
 class Main(Basic_tc_class):
     classid = "1:12"
     rate = MIN_UPLOAD
-    ceil = MAX_UPLOAD
+    ceil = UPLOAD
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
     prio = 1
