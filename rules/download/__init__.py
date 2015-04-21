@@ -13,7 +13,7 @@ def apply_qos():
             interface=LAN_IF["name"],
             rate=LAN_IF["if_speed"],
             ceil=LAN_IF["if_speed"],
-            burst=burst_formula(LAN_IF["if_speed"])*3,
+            burst=burst_formula(LAN_IF["if_speed"]),
             qdisc_prefix_id="1:",
             default=10,
         )

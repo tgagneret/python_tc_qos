@@ -27,7 +27,7 @@ class Interactive(PFIFO_class):
     cburst = cburst_formula(rate, burst)
 
 
-class Openvpn(SFQ_class):
+class OpenVPN(SFQ_class):
     """
     Class for openvpn.
 
@@ -69,7 +69,7 @@ class IRC(SFQ_class):
     prio = 30
     mark = 2100
     rate = 100
-    ceil = DOWNLOAD/100
+    ceil = DOWNLOAD/2
     burst = burst_formula(rate)
     cburst = cburst_formula(rate, burst)
 
@@ -116,7 +116,7 @@ class Main(Basic_tc_class):
     def __init__(self, *args, **kwargs):
         r = super().__init__(*args, **kwargs)
         self.add_child(Interactive())
-        self.add_child(Openvpn())
+        self.add_child(OpenVPN())
         self.add_child(TCP_ack())
         self.add_child(IRC())
         self.add_child(Downloads())
