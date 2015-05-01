@@ -4,13 +4,13 @@
 
 from config import INTERFACES
 from rules.qos_formulas import burst_formula, cburst_formula
-from built_in_classes import PFIFO_class, SFQ_class
+from built_in_classes import PFIFOClass, SFQClass
 
 UPLOAD = INTERFACES["public_if"]["speed"]
 MIN_UPLOAD = 200
 
 
-class GRE_online(PFIFO_class):
+class GRE_online(PFIFOClass):
     """
     Class for gre_tunnel
 
@@ -27,7 +27,7 @@ class GRE_online(PFIFO_class):
     cburst = cburst_formula(rate, burst)
 
 
-class Default(SFQ_class):
+class Default(SFQClass):
     """
     Class for gre_tunnel
 
@@ -43,7 +43,7 @@ class Default(SFQ_class):
     cburst = cburst_formula(rate, burst)
 
 
-class Torrents(SFQ_class):
+class Torrents(SFQClass):
     """
     Class for torrents
 

@@ -4,14 +4,14 @@
 
 from config import INTERFACES
 from rules.qos_formulas import burst_formula, cburst_formula
-from built_in_classes import PFIFO_class, SFQ_class, Basic_tc_class
+from built_in_classes import PFIFOClass, SFQClass, BasicHTBClass
 
 DOWNLOAD = INTERFACES["lan_if"]["speed"]
 MIN_DOWNLOAD = DOWNLOAD/10
 UPLOAD = INTERFACES["public_if"]["speed"]
 
 
-class Interactive(PFIFO_class):
+class Interactive(PFIFOClass):
     """
     Interactive Class, for low latency, high priority packets such as VOIP and
     DNS.
@@ -27,7 +27,7 @@ class Interactive(PFIFO_class):
     cburst = cburst_formula(rate, burst)
 
 
-class OpenVPN(SFQ_class):
+class OpenVPN(SFQClass):
     """
     Class for openvpn.
 
@@ -42,7 +42,7 @@ class OpenVPN(SFQ_class):
     cburst = cburst_formula(rate, burst)
 
 
-class TCP_ack(SFQ_class):
+class TCP_ack(SFQClass):
     """
     Class for TCP ACK.
 
@@ -58,7 +58,7 @@ class TCP_ack(SFQ_class):
     cburst = cburst_formula(rate, burst)
 
 
-class IRC(SFQ_class):
+class IRC(SFQClass):
     """
     Class for IRC or services that doesn't need a lot of bandwidth but have to
     be quick.
@@ -74,7 +74,7 @@ class IRC(SFQ_class):
     cburst = cburst_formula(rate, burst)
 
 
-class Downloads(SFQ_class):
+class Downloads(SFQClass):
     """
     Class for torrents and direct downloads
 
@@ -90,7 +90,7 @@ class Downloads(SFQ_class):
     cburst = cburst_formula(rate, burst)
 
 
-class Default(SFQ_class):
+class Default(SFQClass):
     """
     Default class
 
@@ -105,7 +105,7 @@ class Default(SFQ_class):
     cburst = cburst_formula(rate, burst)
 
 
-class Main(Basic_tc_class):
+class Main(BasicHTBClass):
     classid = "1:12"
     rate = MIN_DOWNLOAD
     ceil = DOWNLOAD
@@ -114,11 +114,10 @@ class Main(Basic_tc_class):
     prio = 1
 
     def __init__(self, *args, **kwargs):
-        r = super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.add_child(Interactive())
         self.add_child(OpenVPN())
         self.add_child(TCP_ack())
         self.add_child(IRC())
         self.add_child(Downloads())
         self.add_child(Default())
-        return r

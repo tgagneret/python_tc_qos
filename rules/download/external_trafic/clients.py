@@ -4,13 +4,13 @@
 
 from config import INTERFACES
 from rules.qos_formulas import burst_formula, cburst_formula
-from built_in_classes import PFIFO_class, SFQ_class, Basic_tc_class
+from built_in_classes import PFIFOClass, SFQClass, BasicHTBClass
 
 DOWNLOAD = INTERFACES["lan_if"]["speed"]
 UPLOAD = INTERFACES["public_if"]["speed"]
 
 
-class Interactive(PFIFO_class):
+class Interactive(PFIFOClass):
     """
     Interactive Class, for low latency, high priority packets such as VOIP and
     DNS.
@@ -26,7 +26,7 @@ class Interactive(PFIFO_class):
     cburst = cburst_formula(rate, burst)
 
 
-class TCP_ack(SFQ_class):
+class TCP_ack(SFQClass):
     """
     Class for TCP ACK.
 
@@ -42,7 +42,7 @@ class TCP_ack(SFQ_class):
     cburst = cburst_formula(rate, burst)
 
 
-class SSH(SFQ_class):
+class SSH(SFQClass):
     """
     Class for SSH connections.
 
@@ -59,7 +59,7 @@ class SSH(SFQ_class):
     cburst = cburst_formula(rate, burst)
 
 
-class HTTP(SFQ_class):
+class HTTP(SFQClass):
     """
     Class for HTTP/HTTPS connections.
     """
@@ -72,7 +72,7 @@ class HTTP(SFQ_class):
     cburst = cburst_formula(rate, burst)
 
 
-class Default(SFQ_class):
+class Default(SFQClass):
     """
     Default class
     """
@@ -85,7 +85,7 @@ class Default(SFQ_class):
     cburst = cburst_formula(rate, burst)
 
 
-class Main(Basic_tc_class):
+class Main(BasicHTBClass):
     classid = "1:11"
     rate = DOWNLOAD * 70/100
     ceil = DOWNLOAD
@@ -94,10 +94,9 @@ class Main(Basic_tc_class):
     prio = 0
 
     def __init__(self, *args, **kwargs):
-        r = super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.add_child(Interactive())
         self.add_child(TCP_ack())
         self.add_child(SSH())
         self.add_child(HTTP())
         self.add_child(Default())
-        return r

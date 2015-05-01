@@ -3,13 +3,13 @@
 # QoS for upload
 
 from config import INTERFACES
-from built_in_classes import PFIFO_class
+from built_in_classes import PFIFOClass
 from rules.qos_formulas import burst_formula
 
 LAN_IF_SPEED = INTERFACES["lan_if"]["if_speed"]
 
 
-class InterVlan(PFIFO_class):
+class InterVlan(PFIFOClass):
     """
     Intervlan need to be fast
     """
