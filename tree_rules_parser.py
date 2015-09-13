@@ -60,11 +60,25 @@ class InterfaceParser:
 
     def update_properties(self):
         if self.ceil is not None:
-            self.ceil = int(self.ceil)
+            try:
+                self.ceil = int(self.ceil)
+            except ValueError:
+                logging.error("Ceil value must be integer")
+                self.ceil = None
+
         if self.burst is not None:
-            self.burst = int(self.burst)
+            try:
+                self.burst = int(self.burst)
+            except ValueError:
+                self.burt = None
+                logging.error("Burst value must be integer")
+
         if self.rate is not None:
-            self.rate = int(self.rate)
+            try:
+                self.rate = int(self.rate)
+            except ValueError:
+                self.rate = None
+                logging.error("Rate value must be integer")
 
     def apply_qos(self):
         self._root.apply_qos()
@@ -147,12 +161,14 @@ class LeafParser:
             try:
                 self.prio = int(self.prio)
             except ValueError:
+                self.prio = None
                 logging.error("Priority must be an integer")
 
         if self.prio is not None:
             try:
                 self.mark = int(self.mark)
             except ValueError:
+                self.mark = None
                 logging.error("Mark must be an integer")
 
         if self.rate is not None:
@@ -163,6 +179,7 @@ class LeafParser:
                     self.rate = tuple(
                         int(s) for s in self.rate[1:-1].split(','))
                 except ValueError:
+                    self.rate = None
                     logging.error("Rate must be an integer or a tuple")
 
     def parse_options(self):
