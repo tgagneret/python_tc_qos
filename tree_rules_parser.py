@@ -4,7 +4,7 @@
 
 from pyparsing import (
     Word, OneOrMore, Group, ZeroOrMore, dictOf, Suppress, alphanums, Keyword,
-    restOfLine, Forward
+    restOfLine, Forward, Optional, Literal, Combine
 )
 from os import path
 import sys
@@ -58,6 +58,14 @@ class InterfaceParser:
             default=self.default,
         )
 
+    def update_properties(self):
+        if self.ceil is not None:
+            self.ceil = int(self.ceil)
+        if self.burst is not None:
+            self.burst = int(self.burst)
+        if self.rate is not None:
+            self.rate = int(self.rate)
+
     def apply_qos(self):
         self._root.apply_qos()
 
@@ -72,6 +80,7 @@ class InterfaceParser:
             else:
                 logging.warning("Trying to set %s to %s : Unknown keyword",
                                 option[0], option[1])
+        self.update_properties()
 
     def parse_leaves(self):
         """
@@ -133,13 +142,28 @@ class LeafParser:
 
     def update_properties(self):
         self.classid = str(self._parent) + ":" + str(self.classid)
-        self.prio = int(self.prio)
-        self.mark = int(self.mark)
 
-        try:
-            self.rate = int(self.rate)
-        except:
-            self.rate = tuple(int(s) for s in self.rate[1:-1].split(','))
+        if self.prio is not None:
+            try:
+                self.prio = int(self.prio)
+            except ValueError:
+                logging.error("Priority must be an integer")
+
+        if self.prio is not None:
+            try:
+                self.mark = int(self.mark)
+            except ValueError:
+                logging.error("Mark must be an integer")
+
+        if self.rate is not None:
+            try:
+                self.rate = int(self.rate)
+            except ValueError:
+                try:
+                    self.rate = tuple(
+                        int(s) for s in self.rate[1:-1].split(','))
+                except ValueError:
+                    logging.error("Rate must be an integer or a tuple")
 
     def parse_options(self):
         """
