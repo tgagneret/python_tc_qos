@@ -136,6 +136,11 @@ class LeafParser:
         self.prio = int(self.prio)
         self.mark = int(self.mark)
 
+        try:
+            self.rate = int(self.rate)
+        except:
+            self.rate = tuple(int(s) for s in self.rate[1:-1].split(','))
+
     def parse_options(self):
         """
         Parse leaf options
@@ -209,8 +214,15 @@ class RulesParser:
         """
         Set leaf structure for parser
         """
+
+        # Match all possible values for leaf options (str, int or tuple)
+        option_value = Combine(
+            Optional(Literal("(")) + Word(alphanums) +
+            ZeroOrMore(Literal(",") + Word(alphanums)) +
+            Optional(Literal(")")), adjacent=False)
+
         leaf_options = Group(
-            ZeroOrMore(Group(Word(alphanums) + Word(alphanums)))
+            ZeroOrMore(Group(Word(alphanums) + option_value))
         )
         leaf_content = leaf_options + Group(ZeroOrMore(self._leaf_structure))
 
