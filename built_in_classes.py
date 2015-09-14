@@ -66,11 +66,16 @@ class EmptyHTBClass():
                 " has no parent."
             )
         parent_speed = getattr(self._parent, attr)
-        try:
-            coeff, speed_min, speed_max = getattr(self, "_" + attr)
-        except ValueError:
-            coeff, speed_min = getattr(self, "_" + attr)
+        if attr is "ceil" and parent_speed is None:
+            parent_speed = getattr(self._parent, "rate")
+        relative_rate = getattr(self, "_" + attr)
+        if relative_rate == 3:
+            coeff, speed_min, speed_max = relative_rate
+        elif len(attr) == 2:
+            coeff, speed_min = relative_rate
             speed_max = parent_speed
+        else:
+            coeff, speed_min, speed_max = relative_rate[0], 0, parent_speed
         return int(
             min(max(parent_speed * coeff/100, speed_min), speed_max)
         )
@@ -128,6 +133,7 @@ class EmptyHTBClass():
         They can be a callback or a fixed value: If attr is an integer, its
         value will be returned directly.  Otherwise, if it is a tuple or a
         function, it will be considered as a callback.
+        An argument obj=self will always be sent to the callback.
 
         :param attr: attr to get (self._cburst or self._burst)
         :return: result of the callback if any, otherwise the direct value of
@@ -140,13 +146,13 @@ class EmptyHTBClass():
                 return attr
         if len(attr) == 3:
             callback, args, kwargs = attr
-            return callback(*args, **kwargs)
+            return callback(obj=self, *args, **kwargs)
         elif len(attr) == 2:
             callback, args = attr
-            return callback(*args)
+            return callback(obj=self, *args)
         else:
-            callback = attr
-            return callback()
+            callback = attr[0]
+            return callback(self)
 
     def _get_burst(self, obj=None):
         """
