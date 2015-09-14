@@ -70,7 +70,7 @@ class InterfaceParser:
             try:
                 self.burst = int(self.burst)
             except ValueError:
-                self.burt = None
+                self.burst = None
                 logging.error("Burst value must be integer")
 
         if self.rate is not None:
